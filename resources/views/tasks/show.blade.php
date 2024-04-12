@@ -1,6 +1,5 @@
 @extends('layouts.app')
 
-@section('status')
 @section('content')
 
     <div class="prose ml-4">
