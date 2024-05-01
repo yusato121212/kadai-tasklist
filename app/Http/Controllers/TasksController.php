@@ -15,13 +15,22 @@ class TasksController extends Controller
      */
     public function index()
     {
-        // タスク一覧を取得
-        $tasks = Task::all();
-
-        // タスク一覧ビューでそれを表示
-        return view('tasks.index', [
-            'tasks' => $tasks,
-        ]);
+        // 認証済みのとき
+        if (\Auth::check())
+        {
+            // タスク一覧を取得
+            $tasks = Task::all();
+    
+            // タスク一覧ビューでそれを表示
+            return view('tasks.index', [
+                'tasks' => $tasks,
+            ]);
+        }
+        else
+        {
+            // 認証していなければログイン画面を表示
+            return redirect('/login');
+        }
     }
 
     /**
@@ -53,14 +62,18 @@ class TasksController extends Controller
             'content' => 'required',
         ]);
         
+        // 認証済みユーザーのIDを取得
+        $user_id = \Auth::id(); // 追加
+        
         // タスクを作成
         $task = new Task;
         $task->status = $request->status;
         $task->content = $request->content;
+        $task->user_id = $user_id;  // 追加
         $task->save();
 
         // トップページへリダイレクトさせる
-        return redirect('/');
+        return redirect('/'); 
     }
 
     /**
@@ -74,10 +87,20 @@ class TasksController extends Controller
         // idの値でタスクを検索して取得
         $task = Task::findOrFail($id);
 
+        // 認証済みユーザーのIDを取得
+        $user_id = \Auth::id(); // 追加
+
+        // タスクのユーザーIDが自分以外
+        if($task->user_id !== $user_id)   // 追加
+        {
+            // トップページへリダイレクトさせる
+            return redirect('/');  
+        }
+
         // タスク詳細ビューでそれを表示
         return view('tasks.show', [
             'task' => $task,
-        ]);
+        ]);           
     }
 
     /**
@@ -94,7 +117,7 @@ class TasksController extends Controller
         // タスク編集ビューでそれを表示
         return view('tasks.edit', [
             'task' => $task,
-        ]);
+        ]);            
     }
 
     /**
@@ -114,13 +137,18 @@ class TasksController extends Controller
         
         // idの値でタスクを検索して取得
         $task = Task::findOrFail($id);
+        
+        // 認証済みユーザーのIDを取得
+        $user_id = \Auth::id(); // 追加
+        
         // タスクを更新
         $task->status = $request->status;
         $task->content = $request->content;
-        $task->save();
-
+        $task->user_id = $user_id;   // 追加
+        $task->save();          
+        
         // トップページへリダイレクトさせる
-        return redirect('/');
+        return redirect('/');            
     }
 
     /**
@@ -137,6 +165,6 @@ class TasksController extends Controller
         $task->delete();
 
         // トップページへリダイレクトさせる
-        return redirect('/');
+        return redirect('/');           
     }
 }

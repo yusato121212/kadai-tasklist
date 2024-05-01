@@ -15,16 +15,17 @@ use App\Http\Controllers\TasksController;   // 追加
 |
 */
 
-Route::get('/', function () {
-    return view('dashboard');
-});
+Route::get('/', [TasksController::class, 'index']);
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [TasksController::class, 'index'])->middleware(['auth'])->name('dashboard');
 
 // 追加
 Route::get('/', [TasksController::class, 'index']);
 Route::resource('tasks', TasksController::class);
+
+// 追加
+Route::group(['middleware' => ['auth']], function () {
+    Route::resource('tasks', TasksController::class, ['only' => ['create', 'store', 'destroy', 'update']]);
+});
 
 require __DIR__.'/auth.php';
