@@ -18,8 +18,15 @@ class TasksController extends Controller
         // 認証済みのとき
         if (\Auth::check())
         {
+            
+            // 認証済みユーザーのIDを取得
+            $user_id = \Auth::id(); // 追加
+        
             // タスク一覧を取得
-            $tasks = Task::all();
+            //$tasks = Task::all();
+    
+            // 認証済みユーザーのタスクのみ取得
+            $tasks = Task::where('user_id', $user_id)->get();
     
             // タスク一覧ビューでそれを表示
             return view('tasks.index', [
@@ -113,6 +120,16 @@ class TasksController extends Controller
     {
         // idの値でタスクを検索して取得
         $task = Task::findOrFail($id);
+
+        // 認証済みユーザーのIDを取得
+        $user_id = \Auth::id(); // 追加
+
+        // タスクのユーザーIDが自分以外
+        if($task->user_id !== $user_id)   // 追加
+        {
+            // トップページへリダイレクトさせる
+            return redirect('/');  
+        }
 
         // タスク編集ビューでそれを表示
         return view('tasks.edit', [
